@@ -20,7 +20,7 @@ jobs:
 
       - name: application.properties 파일을 SECRETS 에서 복사해서 생성
         run: echo "${{ secrets.APPLICATION_PROPERTIES}}" >> ./src/main/resources/application.properties
-
+             echo "server.address=0.0.0.0" >> ./src/main/resources/application.properties
       - name: 실행권한 부여 for gradlew
         run: chmod +x ./gradlew
 
