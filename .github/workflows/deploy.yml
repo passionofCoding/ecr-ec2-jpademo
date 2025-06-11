@@ -28,7 +28,7 @@ jobs:
       - name: 빌드하기 테스트 없이
         run: ./gradlew clean build -x test
 
-      - name: AWS credentials 설정하기
+      - name: AWS credentials 설정
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ap-northeast-2
