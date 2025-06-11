@@ -47,15 +47,28 @@ jobs:
       - name: ECR에 Docker 이미지 Push
         run: docker push ${{ steps.login-ecr.outputs.registry }}/board-repo:latest
 
-      - name: SSH로 EC2에 접속하기 - java 설치, 도커가 설치되어 있어야 한다
-        uses: appleboy/ssh-action@v1.0.3
+      - name: SSH로 EC2에 접속하기 - java 설치, 도커가 설치
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script_stop: true
           script: |
+            set -e
+            
+            echo "📌 8080 포트를 사용 중인 프로세스 확인 및 종료"
+            PID=$(sudo lsof -t -i:8080) || true
+            if [ -n "$PID" ]; then
+              echo "⛔ 8080 포트를 사용하는 PID: $PID → 종료"
+              sudo kill -9 $PID
+            fi
+            
+            echo "🛑 기존 jpademo 컨테이너 중지 및 삭제"
             docker stop jpademo || true
             docker rm jpademo || true
+            
+            echo "📥 최신 이미지 Pull"
             docker pull ${{ steps.login-ecr.outputs.registry }}/board-repo:latest
+            
+            echo "🚀 컨테이너 실행"
             docker run -d --name jpademo -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/board-repo:latest
